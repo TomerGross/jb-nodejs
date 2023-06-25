@@ -1,0 +1,4 @@
+GET /
+GET /guest/dashboard
+GET /login
+GET /login

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+</head>
+<body>
+  <h1>Dashboard</h1>
+  <form action="/symbol" method="post">
+    <label for="symbol">Symbol:</label>
+    <input type="text" id="symbol" name="symbol" required>
+    <button type="submit">Add Symbol</button>
+  </form>
+  <table>
+    <thead>
+      <tr>
+        <th>User Symbols</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (let i = 0; i < userSymbols.length; i++) { %>
+        <tr>
+          <td><%= userSymbols[i] %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</body>
+</html>
