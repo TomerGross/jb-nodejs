@@ -3,14 +3,17 @@ const getConnection = require('../databases/mysql-db');
 const Cryptocurrency = require('../mongo-schemas/cryptocurrency');
 const bodyParserMiddleware = require('../middlewares/bodyParserMiddleware');
 const scrapeCryptocurrencyValues = require('../worker');
-const { io } = require('../app');
+const socket = require('../socket');
+// Access the io object from the shared module
 
+const io = socket.getIO();
 
 const router = express.Router();
 
 router.get('/dashboard', async (req, res) => {
   // Dashboard logic
   try {
+
     const userId = req.session.userId; // Assuming you have stored the user's ID in the session
 
     const connection = await getConnection();
@@ -55,13 +58,13 @@ router.post('/add-cryptocurrency', bodyParserMiddleware, async (req, res) => {
 
         // Delay the page reload to ensure the new data is available
         setTimeout(() => {
-            res.redirect('/dashboard');
+            res.redirect('/user/dashboard');
         }, 3000); 
 
         connection.release();
     } catch (error) {
         console.error('Error adding cryptocurrency:', error);
-        res.redirect('/dashboard');
+        res.redirect('/user/dashboard');
     }
 });
 
