@@ -6,7 +6,7 @@ services:
       - '3307:3306'
     environment:
       - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=my_db
+      - MYSQL_DATABASE=mydb
     volumes:
       - ./init:/docker-entrypoint-initdb.d
 

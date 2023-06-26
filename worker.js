@@ -1,7 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cron = require('cron');
-const Cryptocurrency = require('./cryptocurrency');
+const Cryptocurrency = require('./mongo-schemas/cryptocurrency');
 
 async function scrapeCryptocurrencyValues() {
   try {
@@ -21,7 +21,6 @@ async function scrapeCryptocurrencyValues() {
 
     // Save the scraped values in MongoDB
     await Cryptocurrency.insertMany(scrapedCryptocurrencies);
-
     console.log('Cryptocurrency values scraped and saved.');
   } catch (error) {
     console.error('Error scraping cryptocurrency values:', error);
@@ -31,13 +30,7 @@ async function scrapeCryptocurrencyValues() {
 // Schedule the scraping job to run every minute
 const job = new cron.CronJob('*/10 * * * *', () => {
   console.log('Scraping cryptocurrency values...');
-  scrapeCryptocurrencyValues()
-    .then(() => {
-      console.log('Cryptocurrency values scraped and saved.');
-    })
-    .catch((error) => {
-      console.error('Error scraping cryptocurrency values:', error);
-    });
+  scrapeCryptocurrencyValues();
 });
 
 job.start();
