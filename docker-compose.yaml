@@ -1,0 +1,20 @@
+version: '3'
+services:
+  db:
+    image: mysql:latest
+    ports:
+      - '3307:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=my_db
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - '27017:27017'
+    environment:
+      - MONGO_INITDB_DATABASE=mymongo
+    volumes:
+      - ./mongo-data:/data/db

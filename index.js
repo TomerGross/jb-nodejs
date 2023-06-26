@@ -6,6 +6,7 @@ const path = require('path');
 const Joi = require('joi');
 const bodyParser = require('body-parser');
 const config = require('config');
+const db = require('./db');
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 // Guest routes
+
 // Welcome view
 app.get('/welcome', (req, res) => {
   res.render('welcome');
@@ -67,7 +69,9 @@ app.get('/welcome', (req, res) => {
 // User routes
 // Dashboard view
 app.get('/dashboard', authenticateUser, (req, res) => {
-    res.render('userDashboard');
+    const userSymbols = ['ABC', 'DEF', 'GHI']; // Example userSymbols data
+
+    res.render('userDashboard', {userSymbols});
 });
 
 
@@ -148,7 +152,11 @@ app.get('/callback', (req, res) => {
   const { code } = req.query;
   // Use the code to retrieve access token from GitHub
   // Handle authentication callback logic
-  res.send('GitHub authentication callback');
+
+  // Assuming authentication was successful, set the session for the user
+  req.session.isUser = true;
+  
+  res.redirect('/dashboard');
 });
 
 // MySQL configuration
@@ -161,3 +169,6 @@ const mongoConfig = config.get('mongo');
 app.listen(3000, () => {
   console.log('Server is running on http://localhost:3000');
 });
+
+// Start the worker script
+require('./worker');
