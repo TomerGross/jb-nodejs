@@ -25,13 +25,13 @@
   <% } %>
 
   <h3>Add Cryptocurrency</h3>
-  <form action="/add-cryptocurrency" method="POST">
+  <form action="/user/add-cryptocurrency" method="POST">
     <label for="symbol">Symbol:</label>
     <input type="text" id="symbol" name="symbol" required>
     <button type="submit">Add</button>
   </form>
 
-  <a href="/logout">Logout</a>
+  <a href="/user/logout">Logout</a>
 
   <!-- Include Socket.IO library -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
