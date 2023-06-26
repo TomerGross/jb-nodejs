@@ -1,28 +1,54 @@
+<!-- userDashboard.ejs -->
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dashboard</title>
+  <title>User Dashboard</title>
 </head>
 <body>
-  <h1>Dashboard</h1>
-  <form action="/symbol" method="post">
+  <h1>Welcome to the User Dashboard</h1>
+  <h3>Subscribed Symbols with Values:</h3>
+  <% if (Object.keys(symbolValuesMongo).length === 0) { %>
+    <p>No subscribed symbols found.</p>
+  <% } else { %>
+    <table>
+      <tr>
+        <th>Symbol</th>
+        <th>Value</th>
+      </tr>
+      <% Object.entries(symbolValuesMongo).forEach(([symbol, value]) => { %>
+        <tr>
+          <td><%= symbol %></td>
+          <td class="value-<%= symbol %>"><%= value %></td>
+        </tr>
+      <% }) %>
+    </table>
+  <% } %>
+
+  <h3>Add Cryptocurrency</h3>
+  <form action="/add-cryptocurrency" method="POST">
     <label for="symbol">Symbol:</label>
     <input type="text" id="symbol" name="symbol" required>
-    <button type="submit">Add Symbol</button>
+    <button type="submit">Add</button>
   </form>
-  <table>
-    <thead>
-      <tr>
-        <th>User Symbols</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% for (let i = 0; i < userSymbols.length; i++) { %>
-        <tr>
-          <td><%= userSymbols[i] %></td>
-        </tr>
-      <% } %>
-    </tbody>
-  </table>
+
+  <a href="/logout">Logout</a>
+
+  <!-- Include Socket.IO library -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on('cryptocurrencyValues', (cryptocurrencies) => {
+      console.log(`mongo: ${cryptocurrencies}`);
+      // Update the displayed values for the subscribed symbols
+      cryptocurrencies.forEach(({ symbol, value }) => {
+        const valueElement = document.querySelector(`.value-${symbol}`);
+        if (valueElement) {
+          valueElement.textContent = value;
+        }
+      });
+    });
+
+</script>
 </body>
 </html>

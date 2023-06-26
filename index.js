@@ -8,8 +8,15 @@ const bodyParser = require('body-parser');
 const config = require('config');
 const db = require('./databases/mongo-db');
 const getConnection = require('./databases/mysql-db');
-
+const Cryptocurrency = require('./mongo-schemas/cryptocurrency');
+const scrapeCryptocurrencyValues = require('./worker');
+const cron = require('cron');
+const http = require('http');
 const app = express();
+const server = http.createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(server);
+
 
 // Create logs directory if it doesn't exist
 const logsDir = path.join(__dirname, 'logs');
@@ -72,13 +79,22 @@ app.get('/welcome', (req, res) => {
 app.get('/dashboard', authenticateUser, async (req, res) => {
   try {
     const userId = req.session.userId; // Assuming you have stored the user's ID in the session
+
     const connection = await getConnection();
 
-    // Fetch the subscribed symbols for the user
+    // Fetch the subscribed symbols for the user from MySQL
     const symbolRows = await connection.queryAsync('SELECT symbol FROM users_symbols WHERE user_id = ?', [userId]);
-    const userSymbols = symbolRows.map(row => row.symbol);
+    
+    const userSymbolsMySQL = symbolRows.map(row => row.symbol);
 
-    res.render('userDashboard', { userSymbols });
+    // Fetch the symbol values from MongoDB
+    const symbolsData = await Cryptocurrency.find({ symbol: { $in: userSymbolsMySQL } });
+    const symbolValuesMongo = symbolsData.reduce((values, data) => {
+      values[data.symbol] = data.value;
+      return values;
+    }, {});
+
+    res.render('userDashboard', { userSymbolsMySQL, symbolValuesMongo });
     
     connection.release();
   } catch (error) {
@@ -86,7 +102,6 @@ app.get('/dashboard', authenticateUser, async (req, res) => {
     res.redirect('/welcome');
   }
 });
-
 
 
 app.get('/logout', (req, res) => {
@@ -202,6 +217,10 @@ app.get('/callback', async (req, res) => {
       const rows = await connection.queryAsync('SELECT * FROM users WHERE username = ?', [username]);
       
       if (rows.length > 0) {
+        // User exist, extract it's id
+        const userIdRow = await connection.queryAsync('SELECT id FROM users WHERE username = ?', [username]);
+        req.session.userId = userIdRow[0].id;
+
         // User already exists, redirect to the dashboard
         res.redirect('/dashboard');
       } else {
@@ -233,11 +252,47 @@ app.get('/callback', async (req, res) => {
   }
 });
 
+app.post('/add-cryptocurrency', authenticateUser, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const symbol = req.body.symbol;
+
+    const connection = await getConnection();
+    await connection.queryAsync('INSERT INTO users_symbols (user_id, symbol) VALUES (?, ?)', [userId, symbol]);
+
+    scrapeCryptocurrencyValues();
+
+    // Delay the page reload to ensure the new data is available
+    setTimeout(() => {
+      res.redirect('/dashboard');
+    }, 1000); 
+
+    connection.release();
+  } catch (error) {
+    console.error('Error adding cryptocurrency:', error);
+    res.redirect('/dashboard');
+  }
+});
+
+
+io.on('connection', (socket) => {
+  console.log('New client connected.');
+  // Handle the 'disconnect' event when a client disconnects
+  socket.on('disconnect', () => {
+    console.log('Client disconnected.');
+  });
+});
 
 // Start the server
-app.listen(3000, () => {
+server.listen(3000, () => {
   console.log('Server is running on http://localhost:3000');
 });
 
 // Start the worker script
-require('./worker');
+// Schedule the scraping job to run every hour
+const job = new cron.CronJob('*/1 * * * *', () => {
+  console.log('Scraping cryptocurrency values...');
+  scrapeCryptocurrencyValues(io);
+});
+
+job.start();

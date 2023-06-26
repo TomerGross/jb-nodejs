@@ -1,15 +1,20 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const cron = require('cron');
 const Cryptocurrency = require('./mongo-schemas/cryptocurrency');
+const getConnection = require('./databases/mysql-db');
 
-async function scrapeCryptocurrencyValues() {
+async function scrapeCryptocurrencyValues(io) {
   try {
     const response = await axios.get('https://www.google.com/finance/markets/cryptocurrencies?hl=en');
     const $ = cheerio.load(response.data);
 
     // Scrape values for BTC, ETH, and other cryptocurrencies
-    const symbols = ['BTC', 'ETH', 'LTC']; // Add more symbols as needed
+    const connection = await getConnection();
+
+    // Fetch distinct symbols from users_symbols table in SQL
+    const symbolRows = await connection.queryAsync('SELECT DISTINCT symbol FROM users_symbols');
+    const symbols = symbolRows.map(row => row.symbol);
+    console.log(`symbols: ${symbols}`);
     const scrapedCryptocurrencies = [];
 
     symbols.forEach((symbol) => {
@@ -21,17 +26,15 @@ async function scrapeCryptocurrencyValues() {
 
     // Save the scraped values in MongoDB
     await Cryptocurrency.insertMany(scrapedCryptocurrencies);
+    io.emit('cryptocurrencyValues', scrapedCryptocurrencies);
+    console.log(`Emitted new values`);
     console.log('Cryptocurrency values scraped and saved.');
+
   } catch (error) {
     console.error('Error scraping cryptocurrency values:', error);
   }
 }
 
-// Schedule the scraping job to run every minute
-const job = new cron.CronJob('*/10 * * * *', () => {
-  console.log('Scraping cryptocurrency values...');
-  scrapeCryptocurrencyValues();
-});
+module.exports = scrapeCryptocurrencyValues;
 
-job.start();
 
