@@ -4,6 +4,8 @@ const Cryptocurrency = require('../mongo-schemas/cryptocurrency');
 const bodyParserMiddleware = require('../middlewares/bodyParserMiddleware');
 const scrapeCryptocurrencyValues = require('../worker');
 const symbolSchema = require('../utils/validationSchema')
+const { validateSymbol } = require('../utils/symbolValidator');
+
 const socket = require('../socket');
 // Access the io object from the shared module
 
@@ -54,12 +56,16 @@ router.post('/add-cryptocurrency', bodyParserMiddleware, async (req, res) => {
         const symbol = req.body.symbol;
 
         const { error, value } = symbolSchema.validate(symbol);
+        const isValidSymbol = await validateSymbol(symbol);
 
         if (error) {
-          console.error('Error adding cryptocurrency:', error.details[0].message);
+          console.error(`Error adding cryptocurrency: ${error.details[0].message}`);
+          res.redirect('/user/dashboard');
+        } else if (!isValidSymbol){
+          console.error(`Error adding cryptocurrency: ${symbol} is not a valid cryptocurrency symbol`);
           res.redirect('/user/dashboard');
         } else{
-          console.log(`---------------------PASS-------------------------------`);
+
           const connection = await getConnection();
           await connection.queryAsync('INSERT INTO users_symbols (user_id, symbol) VALUES (?, ?)', [userId, symbol]);
 
