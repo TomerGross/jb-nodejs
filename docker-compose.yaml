@@ -1,20 +1,41 @@
 version: '3'
 services:
-  db:
-    image: mysql:latest
+  express-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: express-server
+    hostname: express-server
     ports:
-      - '3307:3306'
+      - 3000:3000
+    depends_on:
+      - mysql-db
+      - mongo-db
+    networks:
+      - my-network
+
+  mysql-db:
+    image: mysql:latest
+    container_name: mysql-db
+    hostname: mysql-db
     environment:
       - MYSQL_ROOT_PASSWORD=password
       - MYSQL_DATABASE=mydb
     volumes:
       - ./init:/docker-entrypoint-initdb.d
+    networks:
+      - my-network
 
-  mongo:
+  mongo-db:
     image: mongo:latest
-    ports:
-      - '27017:27017'
+    container_name: mongo-db
+    hostname: mongo-db
     environment:
       - MONGO_INITDB_DATABASE=mymongo
     volumes:
       - ./mongo-data:/data/db
+    networks:
+      - my-network
+
+networks:
+  my-network:

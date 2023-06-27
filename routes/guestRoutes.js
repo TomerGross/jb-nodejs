@@ -78,7 +78,7 @@ router.get('/callback', async (req, res) => {
         }
         setTimeout(() => {
           res.redirect('/user/dashboard');
-        }, 1000); 
+        }, 3000); 
         
       }
   
