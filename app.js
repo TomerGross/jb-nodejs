@@ -1,9 +1,8 @@
 const express = require('express');
-const session = require('express-session');
+//const session = require('express-session');
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
-const Joi = require('joi');
 const bodyParser = require('body-parser');
 const db = require('./databases/mongo-db');
 const scrapeCryptocurrencyValues = require('./worker');
@@ -20,7 +19,7 @@ const authMiddleware = require('./middlewares/authMiddleware');
 const { sessionMiddleware, initializeSession } = require('./middlewares/sessionMiddleware');
 
 
-
+app.use(express.static('public'));
 app.use(sessionMiddleware);
 app.use(initializeSession);
 
@@ -57,51 +56,6 @@ const logGuestRequests = (req, res, next) => {
 // Views
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-
-
-// Validation schema for symbol parameter
-const symbolSchema = Joi.string()
-  .alphanum()
-  .uppercase()
-  .length(3)
-  .required()
-  .error((errors) => {
-    errors.forEach((err) => {
-      switch (err.code) {
-        case 'string.alphanum':
-          err.message = 'Symbol must contain alphanumeric characters only';
-          break;
-        case 'string.uppercase':
-          err.message = 'Symbol must be in uppercase';
-          break;
-        case 'string.length':
-          err.message = 'Symbol must be exactly 3 characters long';
-          break;
-        case 'any.required':
-          err.message = 'Symbol is required';
-          break;
-        default:
-          break;
-      }
-    });
-    return errors;
-  });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 io.on('connection', (socket) => {

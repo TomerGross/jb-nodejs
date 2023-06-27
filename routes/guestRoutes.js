@@ -76,8 +76,10 @@ router.get('/callback', async (req, res) => {
         for (const symbol of userSymbols) {
           await connection.queryAsync('INSERT INTO users_symbols (user_id, symbol) VALUES (?, ?)', [userId, symbol]);
         }
+        setTimeout(() => {
+          res.redirect('/user/dashboard');
+        }, 1000); 
         
-        res.redirect('/user/dashboard');
       }
   
       connection.releaseAsync();

@@ -3,12 +3,14 @@ const getConnection = require('../databases/mysql-db');
 const Cryptocurrency = require('../mongo-schemas/cryptocurrency');
 const bodyParserMiddleware = require('../middlewares/bodyParserMiddleware');
 const scrapeCryptocurrencyValues = require('../worker');
+const symbolSchema = require('../utils/validationSchema')
 const socket = require('../socket');
 // Access the io object from the shared module
 
 const io = socket.getIO();
 
 const router = express.Router();
+
 
 router.get('/dashboard', async (req, res) => {
   // Dashboard logic
@@ -51,17 +53,26 @@ router.post('/add-cryptocurrency', bodyParserMiddleware, async (req, res) => {
         const userId = req.session.userId;
         const symbol = req.body.symbol;
 
-        const connection = await getConnection();
-        await connection.queryAsync('INSERT INTO users_symbols (user_id, symbol) VALUES (?, ?)', [userId, symbol]);
+        const { error, value } = symbolSchema.validate(symbol);
 
-        scrapeCryptocurrencyValues(io);
+        if (error) {
+          console.error('Error adding cryptocurrency:', error.details[0].message);
+          res.redirect('/user/dashboard');
+        } else{
+          console.log(`---------------------PASS-------------------------------`);
+          const connection = await getConnection();
+          await connection.queryAsync('INSERT INTO users_symbols (user_id, symbol) VALUES (?, ?)', [userId, symbol]);
 
-        // Delay the page reload to ensure the new data is available
-        setTimeout(() => {
-            res.redirect('/user/dashboard');
-        }, 3000); 
+          scrapeCryptocurrencyValues(io);
+          
 
-        connection.release();
+          // Delay the page reload to ensure the new data is available
+          setTimeout(() => {
+              res.redirect('/user/dashboard');
+          }, 3000); 
+
+          connection.release();
+        }
     } catch (error) {
         console.error('Error adding cryptocurrency:', error);
         res.redirect('/user/dashboard');

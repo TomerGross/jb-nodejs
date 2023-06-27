@@ -1,37 +1,46 @@
-<!-- userDashboard.ejs -->
 <!DOCTYPE html>
 <html>
 <head>
   <title>User Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <h1>Welcome to the User Dashboard</h1>
-  <h3>Subscribed Symbols with Values:</h3>
-  <% if (Object.keys(symbolValuesMongo).length === 0) { %>
-    <p>No subscribed symbols found.</p>
-  <% } else { %>
-    <table>
-      <tr>
-        <th>Symbol</th>
-        <th>Value</th>
-      </tr>
-      <% Object.entries(symbolValuesMongo).forEach(([symbol, value]) => { %>
-        <tr>
-          <td><%= symbol %></td>
-          <td class="value-<%= symbol %>"><%= value %></td>
-        </tr>
-      <% }) %>
-    </table>
-  <% } %>
+  <div class="container">
+    <h1>Crypto Dashboard</h1>
 
-  <h3>Add Cryptocurrency</h3>
-  <form action="/user/add-cryptocurrency" method="POST">
-    <label for="symbol">Symbol:</label>
-    <input type="text" id="symbol" name="symbol" required>
-    <button type="submit">Add</button>
-  </form>
+    <div class="subscribed-symbols">
+      <h3>My Subscribed Symbols:</h3>
+      <% if (Object.keys(symbolValuesMongo).length === 0) { %>
+        <p>No subscribed symbols found.</p>
+      <% } else { %>
+        <table>
+          <tr>
+            <th>Symbol</th>
+            <th>Value</th>
+          </tr>
+          <% Object.entries(symbolValuesMongo).forEach(([symbol, value]) => { %>
+            <tr>
+              <td><%= symbol %></td>
+              <td class="value-<%= symbol %>">$<%= value %></td>
+            </tr>
+          <% }) %>
+        </table>
+      <% } %>
+    </div>
 
-  <a href="/user/logout">Logout</a>
+    <div class="add-cryptocurrency">
+      <h3>Add Cryptocurrency</h3>
+      <form action="/user/add-cryptocurrency" method="POST">
+        <label for="symbol">Symbol:</label>
+        <input type="text" id="symbol" name="symbol" required>
+        <button type="submit">Add</button>
+      </form>
+    </div>
+
+    <div class="logout">
+      <a href="/user/logout">Logout</a>
+    </div>
+  </div>
 
   <!-- Include Socket.IO library -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
@@ -44,11 +53,10 @@
       cryptocurrencies.forEach(({ symbol, value }) => {
         const valueElement = document.querySelector(`.value-${symbol}`);
         if (valueElement) {
-          valueElement.textContent = value;
+          valueElement.textContent = `$${value}`;
         }
       });
     });
-
-</script>
+  </script>
 </body>
 </html>
