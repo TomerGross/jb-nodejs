@@ -1,7 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const Cryptocurrency = require('./mongo-schemas/cryptocurrency');
-const getConnection = require('./databases/mysql-db');
+const Cryptocurrency = require('./cryptocurrency');
+const getConnection = require('./mysql-db');
 
 async function scrapeCryptocurrencyValues(io) {
   try {

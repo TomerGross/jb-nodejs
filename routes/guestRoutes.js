@@ -2,7 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 const config = require('config');
-const getConnection = require('../databases/mysql-db');
+const getConnection = require('../utils/mysql-db');
 
 
 // Welcome view

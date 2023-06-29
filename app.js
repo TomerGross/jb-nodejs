@@ -1,12 +1,12 @@
 const express = require('express');
 const path = require('path');
-const db = require('./databases/mongo-db');
-const scrapeCryptocurrencyValues = require('./worker');
+const db = require('./utils/mongo-db');
+const scrapeCryptocurrencyValues = require('./utils/worker');
 const cron = require('cron');
 const http = require('http');
 const app = express();
 const server = http.createServer(app);
-const socket = require('./socket');
+const socket = require('./utils/socket');
 const io = require('socket.io')(server);
 const { sessionMiddleware, initializeSession } = require('./middlewares/sessionMiddleware');
 const { logGuestRequests, logUserRequests } = require('./middlewares/loggingMiddleware');

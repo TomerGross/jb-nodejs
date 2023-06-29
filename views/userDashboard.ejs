@@ -48,7 +48,6 @@
     const socket = io();
 
     socket.on('cryptocurrencyValues', (cryptocurrencies) => {
-      console.log(`mongo: ${cryptocurrencies}`);
       // Update the displayed values for the subscribed symbols
       cryptocurrencies.forEach(({ symbol, value }) => {
         const valueElement = document.querySelector(`.value-${symbol}`);

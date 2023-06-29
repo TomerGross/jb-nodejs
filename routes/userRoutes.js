@@ -1,12 +1,12 @@
 const express = require('express');
-const getConnection = require('../databases/mysql-db');
-const Cryptocurrency = require('../mongo-schemas/cryptocurrency');
+const getConnection = require('../utils/mysql-db');
+const Cryptocurrency = require('../utils/cryptocurrency');
 const bodyParserMiddleware = require('../middlewares/bodyParserMiddleware');
-const scrapeCryptocurrencyValues = require('../worker');
+const scrapeCryptocurrencyValues = require('../utils/worker');
 const symbolSchema = require('../utils/validationSchema')
 const { validateSymbol } = require('../utils/symbolValidator');
 
-const socket = require('../socket');
+const socket = require('../utils/socket');
 // Access the io object from the shared module
 
 const io = socket.getIO();
